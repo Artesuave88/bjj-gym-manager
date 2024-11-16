@@ -1,4 +1,3 @@
-import { writable } from 'svelte/store';
 import { supabase } from '../supabase';
 
 interface User {
@@ -6,19 +5,22 @@ interface User {
 	email: string;
 }
 
-export const user = writable<User | null>(null);
-
 // Function to check authentication status
+class AuthState {
+	user = $state<User | null>(null);
+}
+export const authState = new AuthState();
+
 export const checkAuth = async () => {
 	const {
 		data: { session }
 	} = await supabase.auth.getSession();
-	user.set(session ? (session.user as User) : null);
+	authState.user = session ? (session.user as User) : null;
 };
 
 // Function to log out
 export const handleLogout = async () => {
 	await supabase.auth.signOut();
-	user.set(null);
+	authState.user = null;
 	window.location.href = '/login';
 };
